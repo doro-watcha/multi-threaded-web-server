@@ -33,8 +33,10 @@ int main( int argc, char *argv[] ) {
   clilen = sizeof(cli_addr);
   ROOT = getenv("PWD");
 
-  /* First call to socket() function */
+  /* First call to socket() function , TCP */
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+  printf("sockfd = %d\n", sockfd);
 
   if (sockfd < 0) {
     perror("ERROR opening socket");
@@ -68,16 +70,20 @@ int main( int argc, char *argv[] ) {
   }
 
   printf("Server is running on port %d\n", portno);
+  
   int client_count = 0;
   while (1) {
-        printf("%d", client_count);
+
     newsockfd[client_count] = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+
+     respond(newsockfd[client_count]);
+
     if ( newsockfd[client_count] == -1 ){
       perror("accept error");
       exit(1);
+    
+
     }
-
-
     client_count++;
   }
   printf("return");
@@ -93,8 +99,13 @@ void respond(int sock) {
   char buffer[9000];
   bzero( buffer, 9000);
 
+
   offset = 0;
   bytes = 0;
+
+
+
+
 
   do {
 
@@ -102,7 +113,27 @@ void respond(int sock) {
     offset += bytes;
 
     if ( strncmp(buffer + offset -4, "\r\n\r\n", 4 ) == 0) break;
+
   
   } while ( bytes > 0 );
+
+  char message[] = "HTTP/1.1 200 OK\r\nContentType: text/html;\r\n\r\n<html><body>Hello World! </body></html>\r\n\r\n";
+
+  int length = strlen(message);
+
+  while ( length > 0 ) {
+
+    printf("send bytes : %d \n" , bytes);
+    bytes = send ( sock, message, length, 0);
+
+    if ( bytes == -1 ) break;
+    length = length - bytes;
+  }
+
+  printf("close");
+  shutdown(sock,SHUT_RDWR);
+  close(sock);
+
+
 
 }
