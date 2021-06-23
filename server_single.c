@@ -84,6 +84,7 @@ int main( int argc, char *argv[] ) {
     
 
     }
+
     client_count++;
   }
   printf("return");
@@ -117,7 +118,27 @@ void respond(int sock) {
   
   } while ( bytes > 0 );
 
-  char message[] = "HTTP/1.1 200 OK\r\nContentType: text/html;\r\n\r\n<html><body>Hello World! </body></html>\r\n\r\n";
+
+  // char message[] = "HTTP/1.1 200 OK\r\nContentType: text/html;\r\n\r\n<html><body>Hello World! </body></html>\r\n\r\n";
+
+  char* message;
+
+  int size = 0;
+  int count = 0;
+
+  FILE *fp = fopen("index.html", "r");
+
+  fseek(fp, 0, SEEK_END);
+  size = ftell(fp);
+
+  message = malloc(size+1);
+  memset(message, 0 , size + 1); 
+
+  fseek(fp,0,SEEK_SET);
+
+  count = fread(message,size,1,fp);
+
+   fclose(fp);
 
   int length = strlen(message);
 
@@ -133,6 +154,7 @@ void respond(int sock) {
   printf("close");
   shutdown(sock,SHUT_RDWR);
   close(sock);
+ 
 
 
 
