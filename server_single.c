@@ -49,27 +49,60 @@ int main( int argc, char *argv[] ) {
   }
 
   /* TODO : Initialize socket structure */
+  bzero( (char * ) &serv_addr, sizeof(serv_addr) );
+
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_addr.s_addr = INADDR_ANY;
+  serv_addr.sin_port = htons(portno);
 
   /* TODO : Now bind the host address using bind() call.*/
+  if ( bind(sockfd, ( struct sockaddr *)&serv_addr, sizeof(serv_addr) ) == -1) {
+    perror("bind error");
+    exit(1);
+  }
 
   /* TODO : Listen on socket you created */
+  if ( listen(sockfd, 10) == -1 ){
+    perror("listen error");
+    exit(1);
+  }
 
   printf("Server is running on port %d\n", portno);
   int client_count = 0;
   while (1) {
+        printf("%d", client_count);
     newsockfd[client_count] = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
     if ( newsockfd[client_count] == -1 ){
       perror("accept error");
       exit(1);
     }
 
+
     client_count++;
   }
+  printf("return");
 
   return 0;
 }
 
 /* TODO : Getting request and respond to clinet */
 void respond(int sock) {
+
+  int offset, bytes;
+
+  char buffer[9000];
+  bzero( buffer, 9000);
+
+  offset = 0;
+  bytes = 0;
+
+  do {
+
+    bytes = recv ( sock , buffer + offset , 1500, 0);
+    offset += bytes;
+
+    if ( strncmp(buffer + offset -4, "\r\n\r\n", 4 ) == 0) break;
+  
+  } while ( bytes > 0 );
 
 }
