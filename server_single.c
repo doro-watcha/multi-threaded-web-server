@@ -76,7 +76,7 @@ int main( int argc, char *argv[] ) {
 
     newsockfd[client_count] = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
 
-     respond(newsockfd[client_count]);
+
 
     if ( newsockfd[client_count] == -1 ){
       perror("accept error");
@@ -84,6 +84,10 @@ int main( int argc, char *argv[] ) {
     
 
     }
+
+        respond(newsockfd[client_count]);
+
+    printf("%d\n", client_count);
 
     client_count++;
   }
@@ -104,22 +108,8 @@ void respond(int sock) {
   offset = 0;
   bytes = 0;
 
+  printf("respond\n");
 
-
-
-
-  do {
-
-    bytes = recv ( sock , buffer + offset , 1500, 0);
-    offset += bytes;
-
-    if ( strncmp(buffer + offset -4, "\r\n\r\n", 4 ) == 0) break;
-
-  
-  } while ( bytes > 0 );
-
-
-  // char message[] = "HTTP/1.1 200 OK\r\nContentType: text/html;\r\n\r\n<html><body>Hello World! </body></html>\r\n\r\n";
 
   char* message;
 
@@ -138,20 +128,50 @@ void respond(int sock) {
 
   count = fread(message,size,1,fp);
 
+  // printf("%s size: %d, count: %d\n", message, size, count);
+
+  // for ( int i = 0 ; i < 3000; i++){
+  //   printf("%c",message[i]);
+  // }
+
    fclose(fp);
 
   int length = strlen(message);
 
+  do {
+
+    bytes = recv ( sock , buffer + offset , 5000, 0);
+
+    printf("receive : %d \n" , bytes);
+    offset += bytes;
+
+    if ( strncmp(buffer + offset -4, "\r\n\r\n", 4 ) == 0) break;
+
+
+  } while ( bytes > 0 );
+
+
   while ( length > 0 ) {
 
-    printf("send bytes : %d \n" , bytes);
+    printf(" %d",length);
+
+
     bytes = send ( sock, message, length, 0);
+
+    printf(" send bytes : %d \n" , bytes);
 
     if ( bytes == -1 ) break;
     length = length - bytes;
   }
 
-  printf("close");
+
+
+
+
+  // char message[] = "HTTP/1.1 200 OK\r\nContentType: text/html;\r\n\r\n<html><body>Hello World! </body></html>\r\n\r\n";
+
+
+  printf("close\n");
   shutdown(sock,SHUT_RDWR);
   close(sock);
  
